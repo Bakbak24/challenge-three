@@ -1,22 +1,13 @@
-const Message = require("../../../models/api/v1/Message");
-const create = (req, res) => {
-  const text = req.body.message.text;
-  const user = req.body.message.user;
-  const m = new Message({ user: user, text: text });
-  m.save().then(() => {
-    res.json({
-      status: "success",
-      data: {
-        message: {
-          m,
-        },
-      },
-    });
-  });
-};
+const Message = require("../../../models/Messages");
 
-const index = async (req, res) => {
+const getAll = async function (req, res) {
+  const query = {};
+  if (req.query.user) {
+    query.user = req.query.user;
+  }
+
   const messages = await Message.find();
+
   res.json({
     status: "success",
     message: "GETTING messages",
@@ -26,6 +17,28 @@ const index = async (req, res) => {
   });
 };
 
+const create = async function (req, res, next) {
+  let message = new Message({
+    user: req.body.user,
+    message: req.body.message,
+  });
+
+  const savedMessage = await message.save();
+
+  res.json({
+    status: "success",
+    message: "Message created",
+    data: {
+      message: savedMessage,
+    },
+  });
+
+  if (req.body.user === "error") {
+    return next(new Error("This is a fake error"));
+  }
+};
+
+//GET ID
 const getById = async function (req, res) {
   const message = await Message.findById(req.params.id);
   res.json({
@@ -37,6 +50,7 @@ const getById = async function (req, res) {
   });
 };
 
+//PUT
 const update = async function (req, res) {
   const message = await Message.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
@@ -51,6 +65,7 @@ const update = async function (req, res) {
   });
 };
 
+//DELETE
 const remove = async function (req, res) {
   const message = await Message.findByIdAndDelete(req.params.id);
 
@@ -63,6 +78,7 @@ const remove = async function (req, res) {
   });
 };
 
+//GET USER ALL MESSAGES
 const getMessagesByUser = async function (req, res) {
   const messagesUser = await Message.find({ user: req.params.user });
 
@@ -75,12 +91,9 @@ const getMessagesByUser = async function (req, res) {
   });
 };
 
-
-module.exports = {
-  create,
-  index,
-  getById,
-  update,
-  remove,
-  getMessagesByUser,
-};
+module.exports.getAll = getAll;
+module.exports.create = create;
+module.exports.getById = getById;
+module.exports.update = update;
+module.exports.remove = remove;
+module.exports.getMessagesByUser = getMessagesByUser;

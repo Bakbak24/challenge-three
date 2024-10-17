@@ -4,16 +4,18 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 
-const mongoose = require("mongoose");
-mongoose.connect("mongodb://localhost:27017/challenge-three");
+const indexRouter = require("./routes/index");
+const usersRouter = require("./routes/users");
+const apiMessagesRouter = require("./routes/api/v1/messages");
 
-const messageRouter = require("./routes/api/v1/messages");
+const mongoose = require("mongoose");
+mongoose.connect("mongodb://127.0.0.1:27017/messages");
 
 const app = express();
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "jade");
+app.set("view engine", "pug");
 
 app.use(logger("dev"));
 app.use(express.json());
@@ -21,7 +23,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use("/api/v1/messages", messageRouter);
+app.use("/", indexRouter);
+app.use("/users", usersRouter);
+app.use("/api/v1/messages", apiMessagesRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
